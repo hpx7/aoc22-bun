@@ -1,6 +1,6 @@
 # aoc22
 
-[Advent of Code 2022](https://adventofcode.com/2022) using [Bun](https://bun.sh/) + Typescript
+[Advent of Code 2022](https://adventofcode.com/2022) solutions using [Bun](https://bun.sh/) + Typescript
 
 To install dependencies:
 
