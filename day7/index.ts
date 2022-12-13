@@ -1,4 +1,5 @@
 import { file } from "bun";
+import { sum } from "../helpers";
 
 const input = await file("day7/input.txt").text();
 const lines = input.split("\n");
@@ -17,7 +18,7 @@ console.log(`part1: ${part1()}`);
 console.log(`part2: ${part2()}`);
 
 function part1() {
-  let ans = 0;
+  const dirSizes: number[] = [];
   function getDirSize(currentDir: Directory) {
     let dirSize = 0;
     currentDir.contents.forEach((item) => {
@@ -27,13 +28,11 @@ function part1() {
         dirSize += getDirSize(item);
       }
     });
-    if (dirSize < 100000) {
-      ans += dirSize;
-    }
+    dirSizes.push(dirSize);
     return dirSize;
   }
   getDirSize(rootDir);
-  return ans;
+  return sum(dirSizes.filter((dirSize) => dirSize < 100000));
 }
 
 function part2() {
@@ -59,41 +58,32 @@ function part2() {
 function parseDirs() {
   let currentDir = rootDir;
   lines.forEach((line) => {
-    if (line.startsWith("$")) {
-      if (line === "$ cd /") {
-        // do nothing
-      } else if (line === "$ ls") {
-        // do nothing
-      } else if (line === "$ cd ..") {
+    if (line.startsWith("$ cd")) {
+      const dirName = line.split(" ").slice(-1)[0];
+      if (dirName === "..") {
         currentDir = currentDir.parentDir!;
-        // console.log("cd", currentDir, filesystem, "\n");
-      } else {
-        // $ cd <dirName>
-        const dirName = line.split(" ").slice(-1)[0];
+      } else if (dirName !== "/") {
         for (const childDir of currentDir.contents) {
           if (childDir.type === "dir" && childDir.name === dirName) {
             currentDir = childDir;
-            // console.log("cd", currentDir, filesystem, "\n");
-            break;
+            return;
           }
         }
       }
-    } else {
-      if (line.startsWith("dir")) {
-        currentDir.contents.push({
-          type: "dir",
-          name: line.split(" ")[1],
-          contents: [],
-          parentDir: currentDir,
-        });
-      } else {
-        const [size, name] = line.split(" ");
-        currentDir.contents.push({
-          type: "file",
-          name,
-          size: parseInt(size),
-        });
-      }
+    } else if (line.startsWith("dir")) {
+      currentDir.contents.push({
+        type: "dir",
+        name: line.split(" ")[1],
+        contents: [],
+        parentDir: currentDir,
+      });
+    } else if (/^\d/.test(line)) {
+      const [size, name] = line.split(" ");
+      currentDir.contents.push({
+        type: "file",
+        name,
+        size: parseInt(size),
+      });
     }
   });
 }
